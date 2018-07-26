@@ -48,37 +48,68 @@ var Slider = (function(){
     var controls = {};
 
     this.prev = function(amount = 1){
-      // TODO:
+      if(amount <= 0){
+        return;
+      }
+
+      current -= amount;
+
+      if(current < 0){
+        current = slides.length - 1;
+      }
+
+      self.showSlide(current);
     };
 
     this.next = function(amount = 1){
-      // TODO:
+      if(amount <= 0){
+        return;
+      }
+
+      current += amount;
+
+      if(current >= slides.length){
+        current = 0;
+      }
+
+      self.showSlide(current);
     };
 
     this.showSlide = function(num = 0){
       if(slides[num]){
         self.resetTimeout();
-        // TODO: show slide
+        
+        for(var i = 0; i < slides.length; i++){
+          slides[i].classList.remove("active");
+
+          if(controls.indicators_list){
+            controls.indicators_list[i].classList.remove("active");
+          }
+        }
+
+        slides[num].classList.add("active");
+        if (controls.indicators_list) {
+          controls.indicators_list[num].classList.add("active");
+        }
       }
     };
 
-    // TODO: change icon
     this.pause = function(){
       if(timeout){
         clearTimeout(timeout);
+        timeout = null;
       }
 
-      if(controls.btn_pause){
-        controls.btn_pause.innerHTML = getProperty(options, "next_icon", "<span>&#9654;</span>");
+      if(controls.pause){
+        controls.pause.innerHTML = getProperty(options, "play_icon", "<span>&#9654;</span>");
       }
     }
 
-    // TODO: change icon
     this.play = function(){
       self.resetTimeout();
 
-      if(controls.btn_pause){
-        controls.btn_pause.innerHTML = getProperty(options, "next_icon", "<span>&#9208;</span>");
+      if(controls.pause){
+        controls.pause.innerHTML = getProperty(options, "pause_icon", "<span>&#9208;</span>");
       }
     }
 
@@ -96,7 +127,11 @@ var Slider = (function(){
       }
 
       timeout = setTimeout(function () {
-        self.next();
+        if(getProperty(options, "play_direction", Slider.FORWARDS) == Slider.BACKWARDS){
+          self.prev();
+        }else{
+          self.next();
+        }
       }, delay * 1000);
     };
 
@@ -111,7 +146,7 @@ var Slider = (function(){
       container.classList.add("slider");
 
       var btn_prev = document.createElement("div");
-      btn_prev.className = "slider_btn_nav slider_btn_prev";
+      btn_prev.className = "slider_btn_nav slider_btn_prev slider_controls";
       btn_prev.innerHTML = getProperty(options, "prev_icon", "<span>&lt</span>");
       btn_prev.addEventListener("click", function(){
         self.prev();
@@ -120,7 +155,7 @@ var Slider = (function(){
       controls.prev = btn_prev;
 
       var btn_next = document.createElement("div");
-      btn_next.className = "slider_btn_nav slider_btn_next";
+      btn_next.className = "slider_btn_nav slider_btn_next slider_controls";
       btn_next.innerHTML = getProperty(options, "next_icon", "<span>&gt</span>");
       btn_next.addEventListener("click", function(){
         self.next();
@@ -129,7 +164,7 @@ var Slider = (function(){
       controls.next = btn_next;
 
       var btn_pause = document.createElement("div");
-      btn_pause.className = "slider_btn_pause";
+      btn_pause.className = "slider_btn_pause slider_controls";
       btn_pause.addEventListener("click", function(){
         self.togglePlay();
       });
@@ -137,7 +172,7 @@ var Slider = (function(){
       controls.pause = btn_pause;
 
       var cnt_indicators = document.createElement("div");
-      cnt_indicators.className = "slider_indicators";
+      cnt_indicators.className = "slider_indicators slider_controls";
 
       controls.indicators = cnt_indicators;
 
@@ -145,9 +180,7 @@ var Slider = (function(){
 
       var indicator_icon = getProperty(options, "indicator_icon", "&#149;");
       for(var i = 0; i < slides.length; i++){
-        (function(){
-          var i_temp = i;
-
+        (function(i_tmp){
           var indicator = document.createElement("div");
           indicator.className = "slider_indicator";
           indicator.innerHTML = indicator_icon;
@@ -158,10 +191,13 @@ var Slider = (function(){
           controls.indicators_list.push(indicator);
 
           cnt_indicators.appendChild(indicator);
-        }());
+        }(i));
       }
 
-      // TODO: add to container
+      container.appendChild(btn_prev);
+      container.appendChild(btn_next);
+      container.appendChild(btn_pause);
+      container.appendChild(cnt_indicators);
 
       self.showSlide(getProperty(options, "start_slide", 0));
 
@@ -190,6 +226,9 @@ var Slider = (function(){
   Slider.getDelay = function(){
     return delay;
   }
+
+  Slider.FORWARDS = "play_direction_next";
+  Slider.BACKWARDS = "play_direction_prev";
 
   // TODO: functions for all
 
