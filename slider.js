@@ -9,6 +9,13 @@ var Slider = (function(){
   var delay = 5; //seconds
   var sliders = [];
 
+  const DEFAULT_ICONS = {
+    pause: "<span>&#9654;</span>",
+    play: "<span>&#9208;</span>",
+    next: "<span>&gt</span>",
+    prev: "<span>&lt</span>"
+  };
+
   function getProperty(options, opt, def){
     if(typeof options[opt] === "undefined"){
       return def;
@@ -41,8 +48,8 @@ var Slider = (function(){
     }
 
     this.container = container;
+    this.slides = [];
     var timeout = null;
-    var slides = [];
     var current = 0;
 
     var controls = {};
@@ -55,7 +62,7 @@ var Slider = (function(){
       var pos = current - amount;
 
       if(pos < 0){
-        pos = slides.length - 1;
+        pos = this.slides.length - 1;
       }
 
       getProperty(options.events, "prev", function(){})();
@@ -69,7 +76,7 @@ var Slider = (function(){
 
       var pos = current + amount;
 
-      if(pos >= slides.length){
+      if(pos >= this.slides.length){
         pos = 0;
       }
 
@@ -78,24 +85,24 @@ var Slider = (function(){
     };
 
     this.showSlide = function(num = 0){
-      if(slides[num]){
+      if(this.slides[num]){
         if(options.playing){
           self.resetTimeout();
         }
 
-        getProperty(options.events, "change_slide", function(){})(num, slides[num]);
+        getProperty(options.events, "change_slide", function(){})(num, this.slides[num]);
 
         current = num;
 
-        for(var i = 0; i < slides.length; i++){
-          slides[i].classList.remove("active");
+        for(var i = 0; i < this.slides.length; i++){
+          this.slides[i].classList.remove("active");
 
           if(controls.indicators_list){
             controls.indicators_list[i].classList.remove("active");
           }
         }
 
-        slides[num].classList.add("active");
+        this.slides[num].classList.add("active");
         if (controls.indicators_list) {
           controls.indicators_list[num].classList.add("active");
         }
@@ -115,7 +122,7 @@ var Slider = (function(){
       options.playing = false;
 
       if(controls.pause){
-        controls.pause.innerHTML = getProperty(options, "play_icon", "<span>&#9654;</span>");
+        controls.pause.innerHTML = getProperty(options, "play_icon", DEFAULT_ICONS.pause);
       }
 
       getProperty(options.events, "pause", function(){})();
@@ -127,7 +134,7 @@ var Slider = (function(){
       options.playing = true;
 
       if(controls.pause){
-        controls.pause.innerHTML = getProperty(options, "pause_icon", "<span>&#9208;</span>");
+        controls.pause.innerHTML = getProperty(options, "pause_icon", DEFAULT_ICONS.play);
       }
 
       getProperty(options.events, "play", function(){})();
@@ -201,32 +208,23 @@ var Slider = (function(){
       }
     };
 
-    // Init
-    (function(){
-      var slds = container.getElementsByClassName('slide');
+    this.updateView = function(){
+      container.innerHTML = "";
 
       var cnt_slides = document.createElement("div");
       cnt_slides.className = "slides";
 
-      for(var i = 0; i < slds.length; i++){
-        slides.push(slds[i]);
-      }
-
-      container.innerHTML = "";
-
-      for(var i = 0; i < slides.length; i++){
-        cnt_slides.appendChild(slides[i]);
+      for(var i = 0; i < self.slides.length; i++){
+        cnt_slides.appendChild(self.slides[i]);
       }
 
       controls.slides_container = cnt_slides;
       container.appendChild(cnt_slides);
 
-      container.classList.add("slider");
-
       var btn_prev = document.createElement("div");
       btn_prev.className = "slider_btn_nav slider_btn_prev slider_controls";
-      btn_prev.innerHTML = getProperty(options, "prev_icon", "<span>&lt</span>");
-      btn_prev.addEventListener("click", function(){
+      btn_prev.innerHTML = getProperty(options, "prev_icon", DEFAULT_ICONS.prev);
+      btn_prev.addEventListener("click", function () {
         self.prev();
       });
 
@@ -234,8 +232,8 @@ var Slider = (function(){
 
       var btn_next = document.createElement("div");
       btn_next.className = "slider_btn_nav slider_btn_next slider_controls";
-      btn_next.innerHTML = getProperty(options, "next_icon", "<span>&gt</span>");
-      btn_next.addEventListener("click", function(){
+      btn_next.innerHTML = getProperty(options, "next_icon", DEFAULT_ICONS.next);
+      btn_next.addEventListener("click", function () {
         self.next();
       });
 
@@ -243,7 +241,7 @@ var Slider = (function(){
 
       var btn_pause = document.createElement("div");
       btn_pause.className = "slider_btn_pause slider_controls";
-      btn_pause.addEventListener("click", function(){
+      btn_pause.addEventListener("click", function () {
         self.togglePlay();
       });
 
@@ -256,13 +254,19 @@ var Slider = (function(){
 
       controls.indicators_list = [];
 
-      var indicator_icon = getProperty(options, "indicator_icon", "&#149;");
-      for(var i = 0; i < slides.length; i++){
-        (function(i_tmp){
+      var indicator_icon = getProperty(options, "indicator_icon", "");
+      for (var i = 0; i < self.slides.length; i++) {
+        (function (i_tmp) {
           var indicator = document.createElement("div");
           indicator.className = "slider_indicator";
-          indicator.innerHTML = indicator_icon;
-          indicator.addEventListener("click", function(){
+
+          if (indicator_icon != "") {
+            indicator.innerHTML = indicator_icon;
+          } else {
+            indicator.classList.add("slider_indicator_icon");
+          }
+
+          indicator.addEventListener("click", function () {
             self.showSlide(i_tmp);
           });
 
@@ -277,15 +281,7 @@ var Slider = (function(){
       container.appendChild(btn_pause);
       container.appendChild(cnt_indicators);
 
-      if(typeof options.events !== "object"){
-        options.events = {};
-      }
-
-      if(!getProperty(options, "show_ui", true)){
-        self.showUI(false);
-      }
-
-      self.showSlide(getProperty(options, "start_slide", 0));
+      self.showSlide(getProperty(options, "start_slide", current));
 
       options.playing = getProperty(options, "playing", true);
 
@@ -303,8 +299,29 @@ var Slider = (function(){
           imgs[i].src = imgs[i].getAttribute("data-src-async");
         }
       }
+    };
 
-      getProperty(options.events, "load", function(){})(cnt_slides);
+    // Init
+    (function(){
+      var slds = container.getElementsByClassName('slide');
+
+      for(var i = 0; i < slds.length; i++){
+        self.slides.push(slds[i]);
+      }
+
+      container.classList.add("slider");
+
+      if(typeof options.events !== "object"){
+        options.events = {};
+      }
+
+      self.updateView();
+
+      if(!getProperty(options, "show_ui", true)){
+        self.showUI(false);
+      }
+
+      getProperty(options.events, "load", function(){})(controls.slides_container);
     }());
 
     sliders.push(this);
@@ -335,8 +352,6 @@ var Slider = (function(){
     PAUSE: 2,
     INDICATORS: 3,
   };
-
-  // TODO: functions for all
 
   return Slider;
 }());

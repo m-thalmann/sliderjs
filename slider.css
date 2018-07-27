@@ -132,6 +132,19 @@
     text-shadow: 0 0 2px #606060;
 }
 
+.slider_indicators .slider_indicator.slider_indicator_icon{
+    height: 12px;
+    width: 12px;
+    background-color: rgba(185, 185, 185, 0.4);
+    border-radius: 50%;
+    border: 1px solid #2b2b2b;
+}
+
+.slider_indicators .slider_indicator.slider_indicator_icon.active{
+    background-color: rgba(53, 53, 53, 0.8);
+    border: 1px solid #b8b8b8;
+}
+
 .slider .slides{
   transition: left 0.5s;
   max-height: 100%;

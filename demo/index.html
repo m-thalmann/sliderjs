@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SliderJS Test</title>
 
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+
   <link rel="stylesheet" href="../slider.css">
   <script src="../slider.js"></script>
+
+  <style>
+    h1{
+      font-family: sans-serif;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <h1>SliderJS Test</h1>
@@ -39,7 +48,12 @@
   </div>
 
   <script>
-    var slider = new Slider("slider");
+    var slider = new Slider("slider", {
+      play_icon: '<i class="fas fa-play"></i>',
+      pause_icon: '<i class="far fa-pause-circle"></i>',
+      prev_icon: '<i class="fas fa-angle-left"></i>',
+      next_icon: '<i class="fas fa-angle-right"></i>'
+    });
   </script>
 </body>
 </html>
