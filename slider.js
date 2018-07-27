@@ -52,13 +52,14 @@ var Slider = (function(){
         return;
       }
 
-      current -= amount;
+      var pos = current - amount;
 
-      if(current < 0){
-        current = slides.length - 1;
+      if(pos < 0){
+        pos = slides.length - 1;
       }
 
-      self.showSlide(current);
+      getProperty(options.events, "prev", function(){})();
+      self.showSlide(pos);
     };
 
     this.next = function(amount = 1){
@@ -66,19 +67,26 @@ var Slider = (function(){
         return;
       }
 
-      current += amount;
+      var pos = current + amount;
 
-      if(current >= slides.length){
-        current = 0;
+      if(pos >= slides.length){
+        pos = 0;
       }
 
-      self.showSlide(current);
+      getProperty(options.events, "next", function(){})();
+      self.showSlide(pos);
     };
 
     this.showSlide = function(num = 0){
       if(slides[num]){
-        self.resetTimeout();
-        
+        if(options.playing){
+          self.resetTimeout();
+        }
+
+        getProperty(options.events, "change_slide", function(){})(num, slides[num]);
+
+        current = num;
+
         for(var i = 0; i < slides.length; i++){
           slides[i].classList.remove("active");
 
@@ -91,6 +99,10 @@ var Slider = (function(){
         if (controls.indicators_list) {
           controls.indicators_list[num].classList.add("active");
         }
+
+        if(controls.slides_container){
+          controls.slides_container.style.left = "-" + (100 * parseInt(num)) + "%";
+        }
       }
     };
 
@@ -100,17 +112,25 @@ var Slider = (function(){
         timeout = null;
       }
 
+      options.playing = false;
+
       if(controls.pause){
         controls.pause.innerHTML = getProperty(options, "play_icon", "<span>&#9654;</span>");
       }
+
+      getProperty(options.events, "pause", function(){})();
     }
 
     this.play = function(){
       self.resetTimeout();
 
+      options.playing = true;
+
       if(controls.pause){
         controls.pause.innerHTML = getProperty(options, "pause_icon", "<span>&#9208;</span>");
       }
+
+      getProperty(options.events, "play", function(){})();
     }
 
     this.togglePlay = function(){
@@ -119,7 +139,13 @@ var Slider = (function(){
       }else{
         self.play();
       }
+
+      getProperty(options.events, "toggle_play", function(){})();
     }
+
+    this.isPlaying = function(){
+      return !!timeout;
+    };
 
     this.resetTimeout = function(){
       if(timeout){
@@ -135,13 +161,65 @@ var Slider = (function(){
       }, delay * 1000);
     };
 
+    this.showUI = function(level){
+      if(level instanceof Array){
+        controls.prev.classList.add("hidden");
+        controls.next.classList.add("hidden");
+        controls.pause.classList.add("hidden");
+        controls.indicators.classList.add("hidden");
+
+        for(var i = 0; i < level.length; i++){
+          switch(level[i]){
+            case Slider.UI.PREV:{
+              controls.prev.classList.remove("hidden");
+              break;
+            }
+            case Slider.UI.NEXT:{
+              controls.next.classList.remove("hidden");
+              break;
+            }
+            case Slider.UI.PAUSE:{
+              controls.pause.classList.remove("hidden");
+              break;
+            }
+            case Slider.UI.INDICATORS:{
+              controls.indicators.classList.remove("hidden");
+              break;
+            }
+          }
+        }
+      }else if(typeof level === "number"){
+        self.showUI([level]);
+      }else if(typeof level === "boolean"){
+        if(level){
+          self.showUI([Slider.UI.PREV, Slider.UI.NEXT, Slider.UI.PAUSE, Slider.UI.INDICATORS]);
+        }else{
+          self.showUI([]);
+        }
+      }else{
+        self.showUI(true);
+      }
+    };
+
     // Init
     (function(){
       var slds = container.getElementsByClassName('slide');
 
+      var cnt_slides = document.createElement("div");
+      cnt_slides.className = "slides";
+
       for(var i = 0; i < slds.length; i++){
         slides.push(slds[i]);
       }
+
+      container.innerHTML = "";
+
+      for(var i = 0; i < slides.length; i++){
+        cnt_slides.appendChild(slides[i]);
+      }
+
+      controls.slides_container = cnt_slides;
+      container.appendChild(cnt_slides);
 
       container.classList.add("slider");
 
@@ -199,13 +277,34 @@ var Slider = (function(){
       container.appendChild(btn_pause);
       container.appendChild(cnt_indicators);
 
+      if(typeof options.events !== "object"){
+        options.events = {};
+      }
+
+      if(!getProperty(options, "show_ui", true)){
+        self.showUI(false);
+      }
+
       self.showSlide(getProperty(options, "start_slide", 0));
 
-      if(getProperty(options, "playing", true)){
+      options.playing = getProperty(options, "playing", true);
+
+      if(options.playing){
         self.play();
       }else{
         self.pause();
       }
+
+      // Load images
+      var imgs = cnt_slides.getElementsByTagName('img');
+
+      for(var i = 0; i < imgs.length; i++){
+        if(imgs[i].getAttribute("data-src-async")){
+          imgs[i].src = imgs[i].getAttribute("data-src-async");
+        }
+      }
+
+      getProperty(options.events, "load", function(){})(cnt_slides);
     }());
 
     sliders.push(this);
@@ -230,13 +329,18 @@ var Slider = (function(){
   Slider.FORWARDS = "play_direction_next";
   Slider.BACKWARDS = "play_direction_prev";
 
+  Slider.UI = {
+    PREV: 0,
+    NEXT: 1,
+    PAUSE: 2,
+    INDICATORS: 3,
+  };
+
   // TODO: functions for all
 
   return Slider;
 }());
 
 /*
-TODO: add option to execute async function
-TODO: function to hide ui
-TODO: events; event for single slide (show_slide -> give num)
+IDEA: Integration with pan event
 */

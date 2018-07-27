@@ -16,7 +16,13 @@
     font-size: 1rem;
     width: 100%;
     height: 100%;
-    vertical-align: middle;
+    vertical-align: top;
+    opacity: 0.5;
+    transition: opacity 0.5s;
+}
+
+.slider .slide.active{
+    opacity: 1;
 }
 
 .slider .slider_controls{
@@ -60,10 +66,7 @@
 }
 
 .slider .slider_btn_prev{
-    left: 0; 
-}
-
-.slider .slider_btn_prev:hover{
+    left: 0;
     background: rgba(255,255,255,0);
     background: rgba(18,18,18,0.1);
     background: -moz-linear-gradient(left, rgba(18,18,18,0.1) 0%, rgba(255,255,255,0) 100%);
@@ -76,10 +79,7 @@
 }
 
 .slider .slider_btn_next{
-    right: 0;  
-}
-
-.slider .slider_btn_next:hover{
+    right: 0;
     background: rgba(255,255,255,0);
     background: -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(18,18,18,0.1) 100%);
     background: -webkit-gradient(left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(100%, rgba(18,18,18,0.1)));
@@ -114,16 +114,40 @@
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
+    max-width: 100%;
+    overflow: auto;
 }
 
 .slider_indicators .slider_indicator{
     display: inline-block;
     margin: 0 2px;
     cursor: pointer;
-    color: #ccc;
+    color: #fff;
+    text-shadow: 0 0 2px #0009;
     transition: all 0.2s;
 }
 
 .slider_indicators .slider_indicator.active{
-    color: #000;
+    color: #303030;
+    text-shadow: 0 0 2px #606060;
+}
+
+.slider .slides{
+  transition: left 0.5s;
+  max-height: 100%;
+}
+
+.slider .hidden{
+  visibility: hidden;
+}
+
+.slide img{
+  min-height: 100%;
+  max-width: 100%;
+}
+
+@media screen and (max-width: 500px){
+  .slider .slider_btn_next, .slider .slider_btn_prev{
+    display: none;
+  }
 }
