@@ -50,11 +50,15 @@ var Slider = (function(){
     this.container = container;
     this.slides = [];
     var timeout = null;
-    var current = 0;
+    var current = -1;
 
     var controls = {};
 
-    this.prev = function(amount = 1){
+    this.prev = function(amount){
+      if(typeof amount === "undefined"){
+        amount = 1;
+      }
+
       if(amount <= 0){
         return;
       }
@@ -69,7 +73,11 @@ var Slider = (function(){
       self.showSlide(pos);
     };
 
-    this.next = function(amount = 1){
+    this.next = function(amount){
+      if(typeof amount === "undefined"){
+        amount = 1;
+      }
+
       if(amount <= 0){
         return;
       }
@@ -84,7 +92,11 @@ var Slider = (function(){
       self.showSlide(pos);
     };
 
-    this.showSlide = function(num = 0){
+    this.showSlide = function(num){
+      if(typeof num === "undefined"){
+        amount = 0;
+      }
+
       if(this.slides[num]){
         if(options.playing){
           self.resetTimeout();
@@ -109,6 +121,10 @@ var Slider = (function(){
 
         if(controls.slides_container){
           controls.slides_container.style.left = "-" + (100 * parseInt(num)) + "%";
+        }
+
+        if(controls.indicator_select){
+          controls.indicator_select.selectedIndex = num;
         }
       }
     };
@@ -254,6 +270,12 @@ var Slider = (function(){
 
       controls.indicators_list = [];
 
+      var select_indicator = document.createElement("select");
+      select_indicator.className = "slider_indicator_select";
+      select_indicator.onchange = function(){
+        self.showSlide(this.value);
+      };
+
       var indicator_icon = getProperty(options, "indicator_icon", "");
       for (var i = 0; i < self.slides.length; i++) {
         (function (i_tmp) {
@@ -273,15 +295,34 @@ var Slider = (function(){
           controls.indicators_list.push(indicator);
 
           cnt_indicators.appendChild(indicator);
+
+          var option_indicator = document.createElement("option");
+          option_indicator.value = i_tmp;
+          option_indicator.innerHTML = (i_tmp + 1);
+
+          if(current == -1 && i_tmp == 0){
+            option_indicator.selected = "true";
+          }else if(current == i_tmp){
+            option_indicator.selected = "true";
+          }
+
+          select_indicator.appendChild(option_indicator);
         }(i));
       }
 
+      controls.indicator_select = select_indicator;
+      
       container.appendChild(btn_prev);
       container.appendChild(btn_next);
       container.appendChild(btn_pause);
       container.appendChild(cnt_indicators);
+      container.appendChild(select_indicator);
 
-      self.showSlide(getProperty(options, "start_slide", current));
+      if(current == -1){
+        self.showSlide(getProperty(options, "start_slide", 0));
+      }else{
+        self.showSlide(current);
+      }
 
       options.playing = getProperty(options, "playing", true);
 

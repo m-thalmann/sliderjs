@@ -110,12 +110,16 @@
     opacity: 1;
 }
 
-.slider_indicators{
+.slider_indicators, .slider_indicator_select{
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
     max-width: 100%;
-    overflow: auto;
+    position: absolute;
+}
+
+.slider_indicator_select{
+    display: none;
 }
 
 .slider_indicators .slider_indicator{
@@ -125,6 +129,7 @@
     color: #fff;
     text-shadow: 0 0 2px #0009;
     transition: all 0.2s;
+    vertical-align: text-bottom;
 }
 
 .slider_indicators .slider_indicator.active{
@@ -160,7 +165,11 @@
 }
 
 @media screen and (max-width: 500px){
-  .slider .slider_btn_next, .slider .slider_btn_prev{
+  .slider .slider_btn_next, .slider .slider_btn_prev, .slider_indicators{
     display: none;
+  }
+
+  .slider_indicator_select{
+    display: block;
   }
 }
