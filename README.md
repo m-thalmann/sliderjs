@@ -65,6 +65,8 @@ new Slider(container, options);
 
 After the instanciation, the slider is reloaded/rendered
 
+**INFO:** If you have images inside the slider, and you don't want them to influence the page-loading, leave the src-attribute of the image empty and add the _data-src-async_ where you put the location of the image. It will be loaded after the slider is created.
+
 #### Class-Variables
 ```javascript
 Slider.FORWARDS         // Is used to define which direction the slider goes
