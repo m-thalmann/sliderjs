@@ -94,7 +94,7 @@ var Slider = (function(){
 
     this.showSlide = function(num){
       if(typeof num === "undefined"){
-        amount = 0;
+        num = 0;
       }
 
       if(this.slides[num]){
