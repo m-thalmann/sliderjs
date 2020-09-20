@@ -1,7 +1,7 @@
 # sliderjs
 A simple JavaScript library, to display a content slider
 
-**Demo:** https://m.thalmann.bz.it/prod/sliderjs/demo.html
+**Demo:** https://prod.thalmann.it/sliderjs/demo.html
 
 ## Navigation
 - [Installation](#installation)
